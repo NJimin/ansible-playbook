@@ -1,5 +1,5 @@
 # Automation
-Playbook 실행 전 사전 설정
+Playbook 실행 전 master node 사전 설정
 
 ```bash
 pip3 install --user ansible
@@ -11,7 +11,7 @@ cd project
 
 Playbook 실행 순서
 
-setup/setup.yml
-setup/iptables.yml
-setup/ntp.yml(생략가능)
-kubeinst/kubeinst.yml
+1. setup/setup.yml
+2. setup/iptables.yml
+3. setup/ntp.yml(생략가능)
+4. kubeinst/kubeinst.yml
