@@ -1,0 +1,29 @@
+- name: Update and upgrade apt packages
+  ansible.builtin.apt:
+    upgrade: dist
+    update_cache: yes
+
+- name: Ensure iptables-persistent is installed
+  apt:
+    name: iptables-persistent
+    state: present
+
+- name: Add iptables rules
+  lineinfile:
+    path: /etc/iptables/rules.v4
+    line: "-A INPUT -p {{ item.protocol }} --dport {{ item.port }} -j ACCEPT"
+    state: present
+  with_items: "{{ iptables_rules }}"
+
+- name: Apply iptables rules
+  shell: |
+    iptables -A INPUT -p {{ item.protocol }} --dport {{ item.port }} -j ACCEPT
+    iptables-save > /etc/iptables/rules.v4
+  with_items: "{{ iptables_rules }}"
+  args:
+    executable: /bin/bash
+
+- name: Restart iptables-persistent service
+  service:
+    name: netfilter-persistent
+    state: restarted

@@ -1,0 +1,15 @@
+---
+- name: Setup
+  hosts: localhost
+  roles:
+    - setup
+
+- name: Open ports using iptables
+  hosts: all
+  roles:
+    - iptables
+
+- name: Configure NTP on servers
+  hosts: all
+  roles:
+    - ntp
