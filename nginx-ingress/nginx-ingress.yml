@@ -1,0 +1,10 @@
+- name: Install Helm on Master Node
+  hosts: master
+  become: yes
+  roles:
+    - helm_install
+
+- name: Deploy Nginx Ingress Controller
+  hosts: master
+  roles:
+    - nginx_ingress

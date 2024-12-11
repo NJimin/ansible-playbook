@@ -1,0 +1,3 @@
+nginx_ingress_namespace: "ingress-nginx"
+nginx_ingress_chart: "ingress-nginx/ingress-nginx"
+
