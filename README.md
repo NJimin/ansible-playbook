@@ -1,4 +1,4 @@
-#Automation
+# Automation
 
 Playbook 실행 전 master node 사전 설정
 
