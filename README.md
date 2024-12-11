@@ -1,4 +1,3 @@
-# ansible-playbook
 Playbook 실행 순서
 1. setup/setup.yml
 2. setup/iptables.yml
