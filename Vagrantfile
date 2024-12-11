@@ -27,8 +27,8 @@ vm_script = <<-SCRIPT
   sed -i 's/KbdInteractiveAuthentication no/KbdInteractiveAuthentication yes/g' /etc/ssh/sshd_config
   systemctl reload ssh
   # Update and upgrade packages
-  sudo apt update && sudo apt upgrade -y
-  sudo apt install -y python3 python3-pip git
+  apt update && apt upgrade -y
+  apt install -y python3 python3-pip git
 SCRIPT
 
 Vagrant.configure("2") do |config|
