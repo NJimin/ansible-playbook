@@ -1,17 +1,14 @@
 - name: Set up common configurations
-  hosts: all
-  become: yes
+  hosts: main
   roles:
     - common
 
 - name: Configure master node
   hosts: master
-  become: yes
   roles:
     - master
 
 - name: Configure worker nodes
   hosts: workers
-  become: yes
   roles:
     - workers

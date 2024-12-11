@@ -1,6 +1,5 @@
 - name: Configure NTP on servers
-  hosts: all
-  become: yes
+  hosts: main
   tasks:
     - name: Install NTP
       apt:

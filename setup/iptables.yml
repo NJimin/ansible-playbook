@@ -1,7 +1,6 @@
 ---
 - name: Open ports using iptables
-  hosts: all
-  become: yes
+  hosts: main
   vars:
     iptables_rules:
       # Kubernetes 관련
