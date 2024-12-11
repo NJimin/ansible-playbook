@@ -8,11 +8,11 @@ master_cpus = 2
 master_memory = 4096
 # Worker node configurations
 worker_configs = [
-  {name: "argocd-node", cpus: 2, memory: 4096},
-  {name: "ingress-controller", cpus: 2, memory:  4096},
   {name: "node1", cpus: 2, memory:  4096},
   {name: "node2", cpus: 2, memory: 4096},
-  {name: "backup", cpus: 2, memory: 4096}
+  {name: "backup", cpus: 2, memory: 4096},
+  {name: "argocd-node", cpus: 2, memory: 4096},
+  {name: "ingress-controller", cpus: 2, memory:  4096}
 ]
 nginx_configs = [
   {name: "master", cpus: 2, memory: 2048},
@@ -29,11 +29,6 @@ vm_script = <<-SCRIPT
   # Update and upgrade packages
   sudo apt update && sudo apt upgrade -y
   sudo apt install -y python3 python3-pip git
-  # Install Ansible with sudo
-  sudo pip3 install --user ansible
-  # Update PATH for Ansible
-  echo 'export PATH=$PATH:~/.local/bin' >> ~/.bashrc
-  source ~/.bashrc
 SCRIPT
 
 Vagrant.configure("2") do |config|
