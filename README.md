@@ -7,6 +7,7 @@ pip3 install --user ansible
 echo 'export PATH=$PATH:~/.local/bin' >> ~/.bashrc
 source ~/.bashrc
 ansible --version #ansible이 작동 되는지 확인
+git clone https://github.com/school-service/Automation
 ```
 
 Playbook 실행 순서
