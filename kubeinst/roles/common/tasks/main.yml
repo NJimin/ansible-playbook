@@ -98,8 +98,6 @@
 
 - name: Apply sysctl settings immediately
   ansible.builtin.command: sysctl -p /etc/sysctl.d/k8s.conf
-<<<<<<< HEAD
-=======
 
 - name: Create .kube directory directory for vagrant user
   ansible.builtin.file:
@@ -108,4 +106,3 @@
     mode: 0755
     owner: vagrant
     group: vagrant
->>>>>>> 97d52da (version1)
