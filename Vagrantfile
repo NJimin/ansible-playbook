@@ -12,7 +12,7 @@ worker_configs = [
   {name: "node2", cpus: 2, memory: 4096},
   {name: "backup", cpus: 2, memory: 4096},
   {name: "argocd-node", cpus: 2, memory: 4096},
-  {name: "ingress-controller", cpus: 2, memory:  4096}
+  {name: "prometheus-node", cpus: 2, memory:  4096}
 ]
 nginx_configs = [
   {name: "master", cpus: 2, memory: 2048},
@@ -66,7 +66,7 @@ Vagrant.configure("2") do |config|
       nginx.vm.box = vm_image
       nginx.vm.hostname = "#{vm_name_prefix}-nginx-#{reverseproxy[:name]}"
       # Set public network with a specified IP for nginx reverse proxy
-      nginx.vm.network "public_network", bridge: "enp0s3", ip: "121.160.41.52"  # Set public IP here
+            nginx.vm.network "private_network", ip: "#{vm_subnet}5#{index+1}", nic_type: "virtio"
       nginx.vm.provider "virtualbox" do |vb|
         vb.name = "#{vm_name_prefix}-nginx-#{reverseproxy[:name]}"
         vb.cpus = reverseproxy[:cpus]
@@ -80,17 +80,54 @@ Vagrant.configure("2") do |config|
         apt-get install -y certbot python3-certbot-nginx
 
         # Configure NGINX as a reverse proxy
-        echo 'server {
-          listen 80;
+        echo '# IP로 접근 시 연결 거부
+server {
+    listen 80 default_server;
+    server_name _;
+    return 444;
+}
 
-          location / {
-              proxy_pass http://192.168.121.10; # Master node IP
-              proxy_set_header Host $host;
-              proxy_set_header X-Real-IP $remote_addr;
-              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-              proxy_set_header X-Forwarded-Proto $scheme;
-          }
-        }' > /etc/nginx/sites-available/default
+server {
+    listen 443 ssl default_server;
+    server_name _;
+    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+    return 444;
+}
+
+server {
+        listen 80;
+        server_name kangyk.com www.kangyk.com;
+
+        location / {
+                return 301 https://$host$request_uri;
+        }
+}
+upstream backend{
+        server 192.168.121.10;
+        #server 192.168.121.21;
+        #server 192.168.121.22;
+        #server 192.168.121.23 backup;
+}
+server {
+    listen 443 ssl;
+    server_name kangyk.com www.kangyk.com;
+
+    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location / {
+        proxy_pass http://backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}' > /etc/nginx/sites-available/default
 
         # Restart NGINX to apply the configuration
         systemctl restart nginx
