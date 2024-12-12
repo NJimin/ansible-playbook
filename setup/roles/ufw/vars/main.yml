@@ -1,4 +1,4 @@
-iptables_rules:
+ufw_rules:
   # Kubernetes 관련
   - { port: 6443, protocol: tcp }    # Kubernetes API
   - { port: 8472, protocol: udp }   # Flannel

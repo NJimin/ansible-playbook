@@ -4,11 +4,11 @@
   roles:
     - cpssh
 
-- name: Open ports using iptables
+- name: Open ports 
   hosts: all
   become: yes
   roles:
-    - iptables
+    - ufw
 
 - name: Configure NTP on servers
   hosts: all

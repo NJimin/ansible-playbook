@@ -42,21 +42,6 @@
     group: vagrant
     mode: '0644'
 
-- name: Reset Kubernetes cluster with kubeadm
-  ansible.builtin.command:
-    cmd: kubeadm reset -f
-  notify:
-    - Flush all iptables rules
-    - Flush NAT iptables rules
-    - Flush mangle iptables rules
-    - Delete all iptables chains
-    - Open kubernetes api port
-    - Open flannel port
-    - Open flannel sub-port
-    
-- name: Flush handlers immediately
-  meta: flush_handlers
-
 - name: Set node IP for kubelet
   ansible.builtin.lineinfile:
     path: /etc/default/kubelet

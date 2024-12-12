@@ -1,0 +1,21 @@
+- name: Update and upgrade apt packages
+  ansible.builtin.apt:
+    upgrade: dist
+    update_cache: yes
+      
+- name: Check UFW
+  apt:
+    name: ufw
+    state: present
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+    policy: allow
+
+- name: Add UFW rules
+  ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.protocol }}"
+  with_items: "{{ ufw_rules }}"
