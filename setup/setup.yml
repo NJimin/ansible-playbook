@@ -1,4 +1,9 @@
 ---
+- name: Copy ssh key
+  hosts: all
+  roles:
+    - cpssh
+
 - name: Open ports using iptables
   hosts: all
   become: yes
