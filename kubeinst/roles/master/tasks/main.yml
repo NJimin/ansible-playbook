@@ -70,17 +70,6 @@
       - "Join Token: {{ join_token }}"
       - "Join SHA256: {{ join_sha256 }}"
 
-<<<<<<< HEAD
-- name: Create .kube directory directory for vagrant user
-  ansible.builtin.file:
-    path: /home/vagrant/.kube
-    state: directory
-    mode: 0755
-    owner: vagrant
-    group: vagrant
-
-=======
->>>>>>> 97d52da (version1)
 - name: Copy admin.conf to user's kube config
   copy:
     src: /etc/kubernetes/admin.conf
