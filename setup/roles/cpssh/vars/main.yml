@@ -1,4 +1,4 @@
-ansible_user: vagant
+ansible_user: vagrant
 kube_nodes:
   - hostname: kubes-master
     ip: 192.168.121.10

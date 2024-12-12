@@ -1,6 +1,6 @@
 ---
 - name: Copy ssh key
-  hosts: all
+  hosts: localhost
   roles:
     - cpssh
 

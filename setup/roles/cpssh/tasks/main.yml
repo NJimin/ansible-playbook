@@ -1,3 +1,11 @@
+- name: Set /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ item.ip }} {{ item.hostname }}"
+    state: present
+  loop: "{{ kube_nodes }}"
+  become: yes
+
 - name: Install sshpass
   apt:
     name: sshpass
