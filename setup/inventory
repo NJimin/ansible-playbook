@@ -1,0 +1,26 @@
+# BEGIN ANSIBLE MANAGED BLOCK
+[master]
+kubes-master ansible_host=192.168.121.10
+
+[etcd]
+kubes-master ansible_host=192.168.121.10
+
+[services]
+kubes-node1 ansible_host=192.168.121.21
+kubes-node2 ansible_host=192.168.121.22
+kubes-backup ansible_host=192.168.121.23
+
+[argocd]
+kubes-argocd-node ansible_host=192.168.121.24
+
+[ingress-controller]
+kubes-ingress-controller ansible_host=192.168.121.25
+
+[workers:children]
+services
+argocd
+ingress-controller
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+# END ANSIBLE MANAGED BLOCK
