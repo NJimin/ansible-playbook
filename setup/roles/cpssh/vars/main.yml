@@ -1,0 +1,18 @@
+ansible_user: vagrant
+kube_nodes:
+  - hostname: kubes-master
+    ip: 192.168.121.10
+  - hostname: kubes-node1
+    ip: 192.168.121.21
+  - hostname: kubes-node2
+    ip: 192.168.121.22
+  - hostname: kubes-backup
+    ip: 192.168.121.23
+  - hostname: kubes-argocd-node
+    ip: 192.168.121.24
+  - hostname: kubes-ingress-controller
+    ip: 192.168.121.25
+
+ssh_key_file: "~/.ssh/id_rsa"
+ssh_key_type: "rsa"
+ssh_key_bits: 4096

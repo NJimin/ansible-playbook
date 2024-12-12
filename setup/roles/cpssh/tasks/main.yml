@@ -1,0 +1,28 @@
+- name: Set /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ item.ip }} {{ item.hostname }}"
+    state: present
+  loop: "{{ kube_nodes }}"
+  become: yes
+
+- name: Install sshpass
+  apt:
+    name: sshpass
+    state: present
+  become: yes
+
+- name: Generate SSH key if not exists
+  command: ssh-keygen -t {{ ssh_key_type }} -b {{ ssh_key_bits }} -N "" -f {{ ssh_key_file }}
+  args:
+    creates: ~/.ssh/id_rsa
+
+- name: Copy SSH key to nodes
+  shell: |
+    sshpass -p "{{ ansible_user }}" ssh-copy-id -o StrictHostKeyChecking=no {{ item.hostname }}
+  loop: "{{ kube_nodes }}"
+
+- name: Add nodes to known_hosts
+  shell: |
+    ssh-keyscan -H {{ item.ip }} >> ~/.ssh/known_hosts
+  loop: "{{ kube_nodes }}"

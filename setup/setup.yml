@@ -1,4 +1,5 @@
 ---
+<<<<<<< HEAD
 - name: Setup
   hosts: localhost
   vars:
@@ -106,3 +107,21 @@
       shell: |
         ssh-keyscan -H {{ item.ip }} >> ~/.ssh/known_hosts
       loop: "{{ kube_nodes }}"
+=======
+- name: Copy ssh key
+  hosts: localhost
+  roles:
+    - cpssh
+
+- name: Open ports using iptables
+  hosts: all
+  become: yes
+  roles:
+    - iptables
+
+- name: Configure NTP on servers
+  hosts: all
+  become: yes
+  roles:
+    - ntp
+>>>>>>> 97d52da (version1)

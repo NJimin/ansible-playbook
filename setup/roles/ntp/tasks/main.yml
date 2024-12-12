@@ -1,0 +1,48 @@
+- name: Install NTP
+  apt:
+    name: ntp
+    state: present
+    update_cache: yes
+
+- name: Backup existing ntp.conf
+  copy:
+    src: /etc/ntp.conf
+    dest: /etc/ntp.conf.bak
+    remote_src: yes
+
+- name: Comment out default pool entries in ntp.conf
+  replace:
+    path: /etc/ntp.conf
+    regexp: '^(pool\s+\d+\.ubuntu\.pool\.ntp\.org\s+iburst)'
+    replace: '# \1'
+
+- name: Add custom NTP server to ntp.conf
+  lineinfile:
+    path: /etc/ntp.conf
+    line: "server 210.98.16.101 iburst"
+    state: present
+
+- name: Start and enable NTP service
+  service:
+    name: ntp
+    state: started
+    enabled: yes
+
+- name: Set timezone to Asia/Seoul
+  command: timedatectl set-timezone Asia/Seoul
+
+- name: Check date and time
+  command: date
+  register: date_output
+
+- name: Display current date and time
+  debug:
+    msg: "Current date and time: {{ date_output.stdout }}"
+
+- name: Check NTP sync status
+  shell: ntpq -p
+  register: ntpq_output
+
+- name: Display NTP sync status
+  debug:
+    var: ntpq_output.stdout
