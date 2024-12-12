@@ -1,0 +1,76 @@
+- name: Install Kubernetes components
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    update_cache: yes
+
+- name: Hold Kubernetes packages
+  ansible.builtin.shell:
+    cmd: apt-mark hold kubelet kubeadm kubectl
+
+- name: Enable and start kubelet service
+  ansible.builtin.systemd:
+    name: kubelet
+    enabled: yes
+    state: started
+
+- name: Disable swap
+  ansible.builtin.shell:
+    cmd: swapoff -a
+  failed_when: false
+
+- name: Disable swap in /etc/fstab
+  ansible.builtin.shell:
+    cmd: sed -i '/swap/s/^/#/' /etc/fstab
+
+- name: Fetch kubeconfig from master
+  ansible.builtin.fetch:
+    src: /home/vagrant/.kube/config
+    dest: /tmp/kubeconfigs/
+    flat: yes
+  delegate_to: kubes-master
+
+- name: Copy kubeconfig file to controller nodes
+  ansible.builtin.copy:
+    src: /tmp/kubeconfigs/config
+    dest: /home/vagrant/.kube/config
+    owner: vagrant
+    group: vagrant
+    mode: '0644'
+
+- name: Reset Kubernetes cluster with kubeadm
+  ansible.builtin.command:
+    cmd: kubeadm reset -f
+  notify:
+    - Flush all iptables rules
+    - Flush NAT iptables rules
+    - Flush mangle iptables rules
+    - Delete all iptables chains
+    - Open kubernetes api port
+    - Open flannel port
+    - Open flannel sub-port
+    
+- name: Flush handlers immediately
+  meta: flush_handlers
+
+- name: Set node IP for kubelet
+  ansible.builtin.lineinfile:
+    path: /etc/default/kubelet
+    regexp: '^KUBELET_EXTRA_ARGS='
+    line: 'KUBELET_EXTRA_ARGS=--node-ip={{ ansible_host }}'
+
+- name: Restart kubelet
+  ansible.builtin.systemd:
+    name: kubelet
+    state: restarted
+
+- name: Join worker node to the cluster
+  ansible.builtin.shell:
+    cmd: >-
+         kubeadm join "{{ hostvars[groups['master'][0]]['join_ip'] }}:6443"
+         --token "{{ hostvars[groups['master'][0]]['join_token'] }}"
+         --discovery-token-ca-cert-hash "sha256:{{ hostvars[groups['master'][0]]['join_sha256'] }}"

@@ -1,0 +1,23 @@
+- name: Set up common configurations
+  hosts: all
+  become: yes
+  roles:
+    - common
+
+- name: Configure master node
+  hosts: master
+  become: yes
+  roles:
+    - master
+
+- name: Configure controller nodes
+  hosts: controllers
+  become: yes
+  roles:
+    - controllers
+
+- name: Configure service nodes
+  hosts: services
+  become: yes
+  roles:
+    - services
