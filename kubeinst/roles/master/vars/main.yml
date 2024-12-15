@@ -1,0 +1,49 @@
+ufw_allow_rules:
+  # Kubernetes 관련
+  - { port: 6443, protocol: tcp }     # Kubernetes API
+  - { port: 8472, protocol: udp }     # Flannel
+  - { port: 4789, protocol: udp }     # Flannel
+  - { port: 2379, protocol: tcp }     # etcd
+  - { port: 2380, protocol: tcp }     # etcd
+  - { port: 10251, protocol: tcp }    # kube-scheduler
+  - { port: 10252, protocol: tcp }    # kube-controller-manager
+  - { port: 53, protocol: tcp }       # DNS
+  - { port: 53, protocol: udp }       # DNS
+  - { port: 179, protocol: tcp }      # calico bgp
+  - { port: 10250, protocol: tcp }    # Kubernetes API
+
+  # Flask 관련
+  - { port: 5000, protocol: tcp }     # Flask 기본 포트
+  - { port: 8000, protocol: tcp }     # Gunicorn 기본 포트
+
+  # Nginx
+  - { port: 80, protocol: tcp }       # HTTP
+  - { port: 443, protocol: tcp }      # HTTPS
+
+  # MySQL
+  - { port: 3306, protocol: tcp }     # MySQL Database
+
+  # Prometheus 및 모니터링 관련
+  - { port: 9090, protocol: tcp }     # Prometheus
+  - { port: 9100, protocol: tcp }     # Node Exporter
+  - { port: 9093, protocol: tcp }     # Alert Manager
+  - { port: 3000, protocol: tcp }     # Grafana
+
+  # GitHub Actions 및 ArgoCD
+  - { port: 8080, protocol: tcp }     # ArgoCD Web UI
+
+  # VPN 및 VPC
+  - { port: 1194, protocol: udp }     # OpenVPN
+  - { port: 4500, protocol: udp }     # IPSec NAT Traversal
+  - { port: 500, protocol: udp }      # IPSec IKE
+
+ufw_deny_rules:
+  - { port: 6443, protocol: tcp }     # Kubernetes API
+  - { port: 2379, protocol: tcp }     # etcd
+  - { port: 2380, protocol: tcp }     # etcd
+  - { port: 10251, protocol: tcp }    # kube-scheduler
+  - { port: 10252, protocol: tcp }    # kube-controller-manager
+  - { port: 53, protocol: tcp }       # DNS
+  - { port: 53, protocol: udp }       # DNS
+  - { port: 10250, protocol: tcp }    # Kubernetes API
+  - { port: 443, protocol: tcp }      # metrics

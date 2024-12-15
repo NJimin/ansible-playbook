@@ -26,13 +26,27 @@
 - name: Disable swap in /etc/fstab
   ansible.builtin.shell:
     cmd: sed -i '/swap/s/^/#/' /etc/fstab
+    
+- name: Ensure directory for fetched kubeconfigs exists
+  ansible.builtin.file:
+    path: /tmp/kubeconfigs
+    state: directory
+    mode: '0755'
+    
+- name: Create pki directory
+  ansible.builtin.file:
+    path: /etc/kubernetes/pki
+    state: directory
+    mode: '0700'
+    owner: root
+    group: root
 
 - name: Fetch kubeconfig from master
   ansible.builtin.fetch:
     src: /home/vagrant/.kube/config
     dest: /tmp/kubeconfigs/
     flat: yes
-  delegate_to: kubes-master
+  delegate_to: "{{ groups['master'][0] }}"
 
 - name: Copy kubeconfig file to controller nodes
   ansible.builtin.copy:
@@ -41,6 +55,36 @@
     owner: vagrant
     group: vagrant
     mode: '0644'
+
+- name: Fetch ca.crt from master
+  ansible.builtin.fetch:
+    src: /etc/kubernetes/pki/ca.crt
+    dest: /tmp/kubeconfigs/
+    flat: yes
+  delegate_to: "{{ groups['master'][0] }}"
+
+- name: Copy apiserver.yaml file to controller nodes
+  ansible.builtin.copy:
+    src: /tmp/kubeconfigs/ca.crt
+    dest: /etc/kubernetes/pki/ca.crt
+    owner: root
+    group: root
+    mode: '0600'
+    
+- name: Fetch apiserver.yaml from master
+  ansible.builtin.fetch:
+    src: /etc/kubernetes/pki/ca.key
+    dest: /tmp/kubeconfigs/
+    flat: yes
+  delegate_to: "{{ groups['master'][0] }}"
+
+- name: Copy apiserver.yaml file to controller nodes
+  ansible.builtin.copy:
+    src: /tmp/kubeconfigs/ca.key
+    dest: /etc/kubernetes/pki/ca.key
+    owner: root
+    group: root
+    mode: '0600'
 
 - name: Set node IP for kubelet
   ansible.builtin.lineinfile:
@@ -52,10 +96,3 @@
   ansible.builtin.systemd:
     name: kubelet
     state: restarted
-
-- name: Join worker node to the cluster
-  ansible.builtin.shell:
-    cmd: >-
-         kubeadm join "{{ hostvars[groups['master'][0]]['join_ip'] }}:6443"
-         --token "{{ hostvars[groups['master'][0]]['join_token'] }}"
-         --discovery-token-ca-cert-hash "sha256:{{ hostvars[groups['master'][0]]['join_sha256'] }}"

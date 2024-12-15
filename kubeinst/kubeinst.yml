@@ -17,7 +17,7 @@
     - controllers
 
 - name: Configure service nodes
-  hosts: services
+  hosts: workers
   become: yes
   roles:
-    - services
+    - workers

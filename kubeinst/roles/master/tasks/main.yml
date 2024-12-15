@@ -27,13 +27,24 @@
   ansible.builtin.shell:
     cmd: sed -i '/swap/s/^/#/' /etc/fstab
 
+- name: Reset Kubernetes cluster with kubeadm
+  ansible.builtin.command:
+    cmd: kubeadm reset -f
+
+- name: Delete UFW rules
+  ufw:
+    rule: deny
+    port: "{{ item.port }}"
+    proto: "{{ item.protocol }}"
+  with_items: "{{ ufw_deny_rules }}"
+
 - name: Reload sysctl configuration
   ansible.builtin.command:
     cmd: sysctl --system
 
 - name: Initialize Kubernetes cluster
   ansible.builtin.shell:
-    cmd: kubeadm init --apiserver-advertise-address={{ ansible_host }} --pod-network-cidr=10.244.0.0/16
+    cmd: kubeadm init --apiserver-advertise-address={{ ansible_host }} --pod-network-cidr=192.168.0.0/16
   register: init_output
 
 - name: Extract kubeadm join command
@@ -54,7 +65,7 @@
       - "Join IP: {{ join_ip }}"
       - "Join Token: {{ join_token }}"
       - "Join SHA256: {{ join_sha256 }}"
-
+    
 - name: Copy admin.conf to user's kube config
   copy:
     src: /etc/kubernetes/admin.conf
@@ -68,13 +79,42 @@
     name: kubelet
     state: restarted
 
-- name: Download Flannel YAML manifest
-  ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml"
-    dest: "/tmp/kube-flannel.yml"
+- name: Enable UFW
+  ufw:
+    state: enabled
+    policy: allow
 
-- name: Apply Flannel network plugin
-  ansible.builtin.shell:
-    cmd: "kubectl apply -f /tmp/kube-flannel.yml"
+- name: Add UFW rules
+  ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.protocol }}"
+  with_items: "{{ ufw_allow_rules }}"
+
+- name: Download Calico manifest
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml"
+    dest: /tmp/calico.yaml
+
+- name: Ensure CALICO_IPV4POOL_CIDR is uncommented
+  ansible.builtin.replace:
+    path: /tmp/calico.yaml
+    regexp: "#[ ]*- name: CALICO_IPV4POOL_CIDR"
+    replace: "- name: CALICO_IPV4POOL_CIDR"
+
+- name: Update CALICO_IPV4POOL_CIDR value
+  ansible.builtin.replace:
+    path: /tmp/calico.yaml
+    regexp: "- name: CALICO_IPV4POOL_CIDR.*"
+    replace: "- name: CALICO_IPV4POOL_CIDR\n              value: \"192.168.0.0/16\""
+
+- name: Add IP_AUTODETECTION_METHOD using sed
+  ansible.builtin.shell: |
+    sed -i '/value: "autodetect"/a\
+                - name: IP_AUTODETECTION_METHOD\n              value: "interface=enp0s8"\n            - name: IP_AUTODETECTION_SKIP_METHOD\n              value: "skip-interface=enp0s3"' /tmp/calico.yaml
+
+- name: Apply Calico manifest to Kubernetes
+  ansible.builtin.shell: |
+    kubectl apply -f /tmp/calico.yaml
   environment:
     KUBECONFIG: /home/vagrant/.kube/config

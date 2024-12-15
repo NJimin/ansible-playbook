@@ -26,6 +26,17 @@
   ansible.builtin.shell:
     cmd: sed -i '/swap/s/^/#/' /etc/fstab
 
+- name: Reset Kubernetes cluster with kubeadm
+  ansible.builtin.command:
+    cmd: kubeadm reset -f
+
+- name: Delete UFW rules
+  ufw:
+    rule: deny
+    port: "{{ item.port }}"
+    proto: "{{ item.protocol }}"
+  with_items: "{{ ufw_deny_rules }}"
+
 - name: Set node IP for kubelet
   ansible.builtin.lineinfile:
     path: /etc/default/kubelet
@@ -36,6 +47,18 @@
   ansible.builtin.systemd:
     name: kubelet
     state: restarted
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+    policy: allow
+
+- name: Add UFW rules
+  ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.protocol }}"
+  with_items: "{{ ufw_allow_rules }}"
 
 - name: Join worker node to the cluster
   ansible.builtin.shell:
