@@ -1,0 +1,6 @@
+- name: Setup and Deploy NGINX Ingress Controller
+  hosts: master
+  become: true
+  roles:
+    - role: helm
+    - role: nginx-ingress

@@ -1,0 +1,22 @@
+- name: Add NGINX Ingress Helm Repository
+  ansible.builtin.command: helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+  args:
+    creates: /root/.cache/helm/repository/ingress-nginx-index.yaml
+
+- name: Update Helm Repositories
+  ansible.builtin.command: helm repo update
+
+- name: Deploy NGINX Ingress with Node Affinity
+  ansible.builtin.command: >
+    helm upgrade --install nginx-ingress ingress-nginx/ingress-nginx
+    --namespace ingress-nginx
+    --create-namespace
+    --set controller.replicaCount=3
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key=kubernetes.io/hostname
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator=In
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=kubes-node1
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[1]=kubes-node2
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[2]=kubes-backup
+  environment:
+    KUBECONFIG: /home/vagrant/.kube/config
+
